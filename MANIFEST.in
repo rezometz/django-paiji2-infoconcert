@@ -1,0 +1,4 @@
+include README.markdown
+include LICENSE
+recursive-include paiji2_infoconcert/static *
+recursive-include paiji2_infoconcert/templates *
