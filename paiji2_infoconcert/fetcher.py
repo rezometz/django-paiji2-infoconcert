@@ -23,26 +23,27 @@ class InfoConcertFetcher(object):
             self.content = None
 
     def get_events(self, filter_free=False):
-        for event in self.content.findAll('', {'itemtype': 'http://data-vocabulary.org/Event', }):
-            etype = event.find('', {'itemprop': 'eventType'})['content']
-            free = event.find('', {'class': 'btn_gratuit'}) != None
-            cost = event.find('', {'class': 'price'});
-            if cost is None:
-                continue
+        if self.content is not None:
+            for event in self.content.findAll('', {'itemtype': 'http://data-vocabulary.org/Event', }):
+                etype = event.find('', {'itemprop': 'eventType'})['content']
+                free = event.find('', {'class': 'btn_gratuit'}) != None
+                cost = event.find('', {'class': 'price'});
+                if cost is None:
+                    continue
 
-            if not filter_free or free:
-                yield {
-                    'type': etype,
-                    'summary': event.find('', {'itemprop': 'summary'}).text.strip().title(),
-                    'organization': {
-                        'locality': event.find('', {'itemprop': 'locality'}).text,
-                        'name': event.find('', {'itemprop': 'name'}).text,
-                    },
-                    'date': dateutil.parser.parse(
-                        event.find('', {'itemprop': 'startDate'})['datetime']
-                    ),
-                    'url': 'http://www.infoconcert.com/',
-                    'label': self.labels.get(etype, 'danger'),
-                    'is_free': free,
-                    'cost': cost.get_text().strip(),
-                }
+                if not filter_free or free:
+                    yield {
+                        'type': etype,
+                        'summary': event.find('', {'itemprop': 'summary'}).text.strip().title(),
+                        'organization': {
+                            'locality': event.find('', {'itemprop': 'locality'}).text,
+                            'name': event.find('', {'itemprop': 'name'}).text,
+                        },
+                        'date': dateutil.parser.parse(
+                            event.find('', {'itemprop': 'startDate'})['datetime']
+                        ),
+                        'url': 'http://www.infoconcert.com/',
+                        'label': self.labels.get(etype, 'danger'),
+                        'is_free': free,
+                        'cost': cost.get_text().strip(),
+                    }
