@@ -14,7 +14,8 @@ class InfoConcertFetcher(object):
 
     def __init__(self):
         try:
-            self.content = BeautifulSoup(urllib2.urlopen(self.url, timeout=1).read())
+            content = urllib2.urlopen(self.url, timeout=1).read()
+            self.content = BeautifulSoup(content)
         except socket.timeout:
             print "Infoconcert timeout"
             self.content = None
@@ -24,24 +25,33 @@ class InfoConcertFetcher(object):
 
     def get_events(self, filter_free=False):
         if self.content is not None:
-            for event in self.content.findAll('', {'itemtype': 'http://data-vocabulary.org/Event', }):
+            events = self.content.findAll('', {
+                'itemtype': 'http://data-vocabulary.org/Event',
+            })
+            for event in events:
                 etype = event.find('', {'itemprop': 'eventType'})['content']
                 free = event.find('', {'class': 'btn_gratuit'}) != None
-                cost = event.find('', {'class': 'price'});
+                cost = event.find('', {'class': 'price'})
+                summary = event.find('', {'itemprop': 'summary', }).text
+                summary = summary.strip().title()
+                org_locality = event.find('', {'itemprop': 'locality'}).text
+                org_name = event.find('', {'itemprop': 'name'}).text
+                date = dateutil.parser.parse(
+                    event.find('', {'itemprop': 'startDate'})['datetime']
+                )
+
                 if cost is None:
                     continue
 
                 if not filter_free or free:
                     yield {
                         'type': etype,
-                        'summary': event.find('', {'itemprop': 'summary'}).text.strip().title(),
+                        'summary': summary,
                         'organization': {
-                            'locality': event.find('', {'itemprop': 'locality'}).text,
-                            'name': event.find('', {'itemprop': 'name'}).text,
+                            'locality': org_locality,
+                            'name': org_name,
                         },
-                        'date': dateutil.parser.parse(
-                            event.find('', {'itemprop': 'startDate'})['datetime']
-                        ),
+                        'date': date,
                         'url': 'http://www.infoconcert.com/',
                         'label': self.labels.get(etype, 'danger'),
                         'is_free': free,
