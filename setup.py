@@ -34,4 +34,8 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
+    install_requires=[
+       'python-dateutil >= 2.2',
+       'beautifulsoup4 >= 4',
+    ],
 )
